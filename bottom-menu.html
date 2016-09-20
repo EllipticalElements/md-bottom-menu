@@ -1,0 +1,68 @@
+
+<dom-module id="bottom-menu">
+    <style>
+        :host{
+            width:322px;
+            background:#fff;
+            box-shadow:0 6px 10px 0 rgba(0, 0, 0, 0.14), 0 1px 18px 0 rgba(0, 0, 0, 0.12), 0 3px 5px -1px rgba(0, 0, 0, 0.4);
+        }
+        :host header{
+            display:-webkit-flex;
+            display: flex;
+            -webkit-align-items: center;
+            align-items: center;
+            padding-left:1em;
+            font-size:14px;
+            height:40px;
+            border-bottom:1px solid #e4e4e4;
+            font-family:'robotoregular';
+        }
+        :host section{
+            margin:1em 0 0 0;
+            display:-webkit-flex;
+            display: flex;
+            -webkit-flex-wrap: wrap;
+            flex-wrap:wrap;
+            padding-left:.5em;
+        }
+        :host section ::content >*{
+            margin-bottom:2em;
+            width:100px;
+            padding-top:.5em;
+            border-radius:20px;
+        }
+        :host section ::content>md-icon-label .label-icon{
+            color:#333;
+            font-size:12px !important;
+        }
+
+    </style>
+    <template>
+        <header>[[title]]</header>
+        <section>
+            <content></content>
+        </section>
+    </template>
+</dom-module>
+<script>
+
+    Polymer({
+
+        is: 'bottom-menu',
+
+        behaviors:[],
+
+        properties: {
+
+        },
+
+        listeners:{
+
+        },
+
+        ready:function(){
+
+        }
+    });
+
+</script>

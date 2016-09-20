@@ -1,0 +1,178 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../gsap-import/gsap-import.html">
+<link rel="import" href="../elliptical-polymer-behaviors/component-behavior.html">
+<link rel="import" href="bottom-menu.html">
+
+<dom-module id="md-bottom-menu">
+  <style>
+    :host {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      display: -webkit-flex;
+      display: flex;
+      -webkit-justify-content: center;
+      justify-content: center;
+      z-index: var(--md-bottom-menu-z-index, 999);
+    }
+
+    :host ::content > bottom-menu {
+      display: none;
+    }
+
+    :host ::content > bottom-menu.show {
+      display: block;
+    }
+  </style>
+  <template>
+    <content></content>
+  </template>
+</dom-module>
+<script>
+
+  Polymer({
+
+    is: 'md-bottom-menu',
+
+    behaviors: [Elliptical.ComponentBehavior],
+
+    properties: {
+      eventNamespace: {
+        type: String,
+        value: '-'
+      },
+
+      menuHeight: {
+        type: String,
+        value: '262px'
+      },
+
+      modalZIndex: {
+        type: Number,
+        value: 995
+      },
+
+      _selectedId: {
+        type: String,
+        value: null
+      },
+
+      _selectedTarget: {
+        type: String,
+        value: null
+      },
+
+      _menuId: {
+        type: String,
+        value: null
+      },
+
+      _tl: {
+        type: Object,
+        value: null
+      },
+
+      _marginBottom: {
+        type: String,
+        value: null
+      },
+
+      _body: {
+        type: Array,
+        value: null
+      }
+
+    },
+
+    listeners: {},
+
+    ready: function () {
+      this._tl = new TimelineMax();
+      this._body = $('body');
+      this._marginBottom = '-' + this.menuHeight;
+      this._events();
+    },
+
+    _events: function () {
+      var click = this._data.click;
+      this._event(this.element, click, 'md-icon-label', this._onClick.bind(this));
+    },
+
+    _onClick: function (event) {
+      var target = event.currentTarget;
+      var id = target.dataset.id;
+      var persistModal = (target.getAttribute('modal-on-close') === 'true');
+      this._hide(this._menuId, persistModal);
+      var delimiter = this.eventNamespace;
+      var evt = 'bottom' + delimiter + 'menu' + delimiter + 'press';
+      target.classList.remove('active');
+      this._selectedId = id;
+      this._selectedTarget = target;
+      this.fire(evt,
+              {
+                id: id,
+                target: target
+              });
+    },
+
+    _displayModal:function(fn){
+       var body = this._body;
+       this._setModal(body,{zIndex:99}, fn);
+    },
+
+    _show:function(id){
+      var self = this;
+      var menu = this.element.find('bottom-menu[data-id="' + id + '"]');
+      if (!menu[0]) return;
+      this._menuId = id;
+      var tl = this._tl;
+      var marginBottom = this._marginBottom;
+      this._displayModal(function(){
+         tl.set(menu[0],{marginBottom:marginBottom,display:'block'})
+          .to(menu[0],.3,{marginBottom:0,ease:Power2.easeOut});
+
+          self._documentPressHide(id);
+
+      });
+    },
+
+      _documentPressHide: function (id) {
+        var self=this;
+        var click=this._data.click;
+        $(document).on(click + '.bottom-menu.document', function (event) {
+          var target=$(event.target);
+          if(!target.is('bottom-menu iron-icon') && !target.is('bottom-menu span')) self._hide(id,false);
+          self._documentPressOff();
+        });
+      },
+
+      _documentPressOff:function(){
+        var click=this._data.click;
+        $(document).off(click + '.bottom-menu.document');
+      },
+
+    _hide:function(id, persistModal){
+      var menu = this.element.find('bottom-menu[data-id="' + id + '"]');
+      if (!menu[0]) return;
+      var delimiter = this.eventNamespace;
+      var evt = 'bottom' + delimiter + 'menu' + delimiter + 'hide';
+      var tl = this._tl;
+      if (!persistModal) this._removeModal();
+      var marginBottom = this._marginBottom;
+      tl.to(menu[0], .3,{marginBottom:marginBottom})
+         .set(menu[0],{display:'none'});
+       this._menuId = null;
+       this.fire(evt,{id:id});
+    },
+
+    show: function (id) {
+      this._show(id);
+    },
+
+    hide: function (id) {
+      this._hide(id);
+    }
+  });
+
+</script>
