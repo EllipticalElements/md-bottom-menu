@@ -95,7 +95,7 @@
     },
 
     _events: function () {
-      var click = this._data.click;
+      var click = this._deviceClickEvent();
       this._event(this.element, click, 'md-icon-label', this._onClick.bind(this));
     },
 
@@ -117,8 +117,12 @@
     },
 
     _displayModal:function(fn){
-       var body = this._body;
-       this._setModal(body,{zIndex:99}, fn);
+     var body = this._body;
+     this._setModal(body,{zIndex:99}, fn);
+    },
+
+    _getClickEvent:function(){
+      return (this._device.touch) ? 'touchend' : 'click';
     },
 
     _show:function(id){
@@ -129,28 +133,27 @@
       var tl = this._tl;
       var marginBottom = this._marginBottom;
       this._displayModal(function(){
-         tl.set(menu[0],{marginBottom:marginBottom,display:'block'})
+        tl.set(menu[0],{marginBottom:marginBottom,display:'block'})
           .to(menu[0],.3,{marginBottom:0,ease:Power2.easeOut});
 
-          self._documentPressHide(id);
+        self._documentPressHide(id);
+       });
+    },
 
+    _documentPressHide: function (id) {
+      var self = this;
+      var click = this._deviceClickEvent();
+      $(document).on(click + '.bottom-menu', function (event) {
+        var target = $(event.target);
+        if (!target.is('bottom-menu iron-icon') && !target.is('bottom-menu span')) self._hide(id, false);
+        self._documentPressOff();
       });
     },
 
-      _documentPressHide: function (id) {
-        var self=this;
-        var click=this._data.click;
-        $(document).on(click + '.bottom-menu.document', function (event) {
-          var target=$(event.target);
-          if(!target.is('bottom-menu iron-icon') && !target.is('bottom-menu span')) self._hide(id,false);
-          self._documentPressOff();
-        });
-      },
-
-      _documentPressOff:function(){
-        var click=this._data.click;
-        $(document).off(click + '.bottom-menu.document');
-      },
+    _documentPressOff: function () {
+      var click = this._deviceClickEvent();
+      $(document).off(click + '.bottom-menu');
+    },
 
     _hide:function(id, persistModal){
       var menu = this.element.find('bottom-menu[data-id="' + id + '"]');
@@ -161,9 +164,10 @@
       if (!persistModal) this._removeModal();
       var marginBottom = this._marginBottom;
       tl.to(menu[0], .3,{marginBottom:marginBottom})
-         .set(menu[0],{display:'none'});
-       this._menuId = null;
-       this.fire(evt,{id:id});
+          .set(menu[0],{display:'none'});
+
+      this._menuId = null;
+      this.fire(evt,{id:id});
     },
 
     show: function (id) {
